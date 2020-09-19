@@ -1,13 +1,8 @@
-pub mod lexer;
-
-#[allow(clippy::all)]
-#[cfg_attr(rustfmt, rustfmt_skip)]
-pub mod lua;
+mod parser;
 
 fn main() {
-    let src = "22 * 11 + 65";
-    let lexer = lexer::Lexer::new(src);
-    let expr = lua::ExprParser::new().parse(src, lexer).unwrap();
+    let src = "3 + 22 * 11 + 65";
+    let expr = parser::parse(src);
 
     println!("{0:?}", expr);
 }

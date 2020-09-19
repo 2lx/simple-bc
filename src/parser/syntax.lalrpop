@@ -1,0 +1,45 @@
+use super::types::*;
+use super::lexer::{Token, LexicalError};
+
+grammar<'input>(input: &'input str);
+
+pub Source: Block = {
+    Expr+ => Block(<>)
+}
+
+Expr: Expr = {
+    Expr0,
+}
+
+Expr0: Expr = {
+    <l:Expr0> <a:@L> "+" <b:@R> <r:Expr1> => Expr::Add(Loc(a, b), Box::new(l), Box::new(r)),
+    <l:Expr0> <a:@L> "-" <b:@R> <r:Expr1> => Expr::Subtract(Loc(a, b), Box::new(l), Box::new(r)),
+    Expr1,
+}
+
+Expr1: Expr = {
+    <l:Expr1> <a:@L> "*" <b:@R> <r:Expr2> => Expr::Multiply(Loc(a, b), Box::new(l), Box::new(r)),
+    <l:Expr1> <a:@L> "/" <b:@R> <r:Expr2> => Expr::Divide(Loc(a, b), Box::new(l), Box::new(r)),
+    Expr2,
+}
+
+Expr2: Expr = {
+    "(" <e:Expr> ")" => e,
+    <l:@L> <s:"string"> <r:@R> => Expr::StringLiteral(Loc(l, r), s.to_string()),
+}
+
+extern {
+    type Location = usize;
+    type Error = LexicalError;
+
+    enum Token<'input> {
+        "string" => Token::String(<&'input str>),
+        // "pi" => Token::Pi,
+        "+" => Token::OpAdd,
+        "-" => Token::OpSub,
+        "*" => Token::OpMul,
+        "/" => Token::OpDiv,
+        "(" => Token::ParenOpen,
+        ")" => Token::ParenClose,
+    }
+}
