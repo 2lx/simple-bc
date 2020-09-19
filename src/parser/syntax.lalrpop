@@ -4,10 +4,10 @@ use super::lexer::{Token, LexicalError};
 grammar<'input>(input: &'input str);
 
 pub Source: Block = {
-    Expr+ => Block(<>)
+    Expression => Block(<>)
 }
 
-Expr: Expr = {
+Expression: Expr = {
     Expr0,
 }
 
@@ -24,8 +24,9 @@ Expr1: Expr = {
 }
 
 Expr2: Expr = {
-    "(" <e:Expr> ")" => e,
-    <l:@L> <s:"string"> <r:@R> => Expr::StringLiteral(Loc(l, r), s.to_string()),
+    <a:@L> "-" <b:@R> <r:Expr2> => Expr::UnaryMinus(Loc(a, b), Box::new(r)),
+    <a:@L> <s:LexStringLiteral> <b:@R> => Expr::StringLiteral(Loc(a, b), s.to_string()),
+    "(" <e:Expression> ")" => e,
 }
 
 extern {
@@ -33,7 +34,7 @@ extern {
     type Error = LexicalError;
 
     enum Token<'input> {
-        "string" => Token::String(<&'input str>),
+        LexStringLiteral => Token::String(<&'input str>),
         // "pi" => Token::Pi,
         "+" => Token::OpAdd,
         "-" => Token::OpSub,
