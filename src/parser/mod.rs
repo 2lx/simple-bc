@@ -8,7 +8,7 @@ use lalrpop_util::ParseError;
 
 pub fn parse(
     src: &str,
-) -> Result<terms::Block, ParseError<usize, lexer::Token, lexer::LexicalError>> {
+) -> Result<terms::Statements, ParseError<usize, lexer::Token, lexer::LexicalError>> {
     let lexer = lexer::Lexer::new(src);
     syntax::SourceParser::new().parse(src, lexer)
 }
@@ -17,52 +17,44 @@ pub fn parse(
 fn test_expressions_ok() {
     let result = parse("3 + 22 * 11 + 65");
     assert!(result.is_ok());
-    assert_eq!(
-        &format!("{:?}", result.unwrap()),
-        "[((3 + (22 * 11)) + 65)]"
-    );
+    assert_eq!(&format!("{}", result.unwrap()), "((3 + (22 * 11)) + 65);");
 
-    let result = parse("(3 + 22) * 11 + 65");
+    let result = parse("(3 + 22) * 11 + 65;");
     assert!(result.is_ok());
-    assert_eq!(
-        &format!("{:?}", result.unwrap()),
-        "[(((3 + 22) * 11) + 65)]"
-    );
+    assert_eq!(&format!("{}", result.unwrap()), "(((3 + 22) * 11) + 65);");
 
     let result = parse("3 + 22 * (11 + 65)");
     assert!(result.is_ok());
-    assert_eq!(
-        &format!("{:?}", result.unwrap()),
-        "[(3 + (22 * (11 + 65)))]"
-    );
+    assert_eq!(&format!("{}", result.unwrap()), "(3 + (22 * (11 + 65)));");
 
     let result = parse("(3 + 22) * (11 + 65)");
     assert!(result.is_ok());
-    assert_eq!(
-        &format!("{:?}", result.unwrap()),
-        "[((3 + 22) * (11 + 65))]"
-    );
+    assert_eq!(&format!("{}", result.unwrap()), "((3 + 22) * (11 + 65));");
 
     let result = parse("-(3 + - 22) * (-11 + 65)");
     assert!(result.is_ok());
     assert_eq!(
-        &format!("{:?}", result.unwrap()),
-        "[(-(3 + -22) * (-11 + 65))]"
+        &format!("{}", result.unwrap()),
+        "(-(3 + -22) * (-11 + 65));"
     );
 
     let result = parse("-3+-22*-11**3*1+ 65");
     assert!(result.is_ok());
     assert_eq!(
-        &format!("{:?}", result.unwrap()),
-        "[((-3 + ((-22 * (-11 ** 3)) * 1)) + 65)]"
+        &format!("{}", result.unwrap()),
+        "((-3 + ((-22 * (-11 ** 3)) * 1)) + 65);"
     );
 
     let result = parse("-3+-22--11**3*1+ 65");
     assert!(result.is_ok());
     assert_eq!(
-        &format!("{:?}", result.unwrap()),
-        "[(((-3 + -22) - ((-11 ** 3) * 1)) + 65)]"
+        &format!("{}", result.unwrap()),
+        "(((-3 + -22) - ((-11 ** 3) * 1)) + 65);"
     );
+
+    let result = parse("- PI* (10)");
+    assert!(result.is_ok());
+    assert_eq!(&format!("{}", result.unwrap()), "(-PI * 10);");
 }
 
 #[test]
@@ -82,7 +74,10 @@ fn test_errors() {
     assert!(result.is_err());
     match result.unwrap_err() {
         #[allow(unused_variables)]
-        ParseError::UnrecognizedToken { token: (l, token, r), expected } => (),
+        ParseError::UnrecognizedToken {
+            token: (l, token, r),
+            expected,
+        } => (),
         _ => assert!(false, "wrong error type"),
     };
 
@@ -90,7 +85,10 @@ fn test_errors() {
     assert!(result.is_err());
     match result.unwrap_err() {
         #[allow(unused_variables)]
-        ParseError::UnrecognizedToken { token: (l, token, r), expected } => (),
+        ParseError::UnrecognizedToken {
+            token: (l, token, r),
+            expected,
+        } => (),
         _ => assert!(false, "wrong error type"),
     };
 
@@ -101,4 +99,15 @@ fn test_errors() {
         ParseError::UnrecognizedEOF { location, expected } => (),
         _ => assert!(false, "wrong error type"),
     };
+}
+
+#[test]
+fn test_statements() {
+    let result = parse("3+2;12-3;-42;");
+    assert!(result.is_ok());
+    assert_eq!(&format!("{}", result.unwrap()), "(3 + 2); (12 - 3); -42;");
+
+    let result = parse("3+2;12-3;-42;");
+    assert!(result.is_ok());
+    assert_eq!(&format!("{}", result.unwrap()), "(3 + 2); (12 - 3); -42;");
 }

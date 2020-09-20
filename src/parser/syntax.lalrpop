@@ -3,8 +3,24 @@ use super::lexer::{Token, LexicalError};
 
 grammar<'input>(input: &'input str);
 
-pub Source: Block = {
-    Expression => Block(<>),
+// templates
+SepVec<T>: Vec<T> = {
+    <v:(<T> ";")*> <e:T?> => match e {
+        None => v,
+        Some(e) => {
+            let mut v = v;
+            v.push(e);
+            v
+        }
+    }
+};
+
+pub Source: Statements = {
+    SepVec<Statement> => Statements(<>),
+}
+
+Statement: Statement = {
+    Expression => Statement(<>),
 }
 
 Expression: Term = {
@@ -34,6 +50,7 @@ Expr3: Term = {
         Term::NumberLiteral(Loc(a, b), s.parse::<i128>().unwrap())
     },
     "(" <e:Expression> ")" => e,
+    <a:@L> "PI" <b:@R> => Term::Pi(Loc(a, b)),
 }
 
 extern {
@@ -41,9 +58,8 @@ extern {
     type Error = LexicalError;
 
     enum Token<'input> {
-        LexStringLiteral => Token::Variable(<&'input str>),
+        LexVariable => Token::Variable(<&'input str>),
         LexNumberLiteral => Token::Number(<&'input str>),
-        // "pi" => Token::Pi,
         "+" => Token::OpAdd,
         "-" => Token::OpSub,
         "*" => Token::OpMul,
@@ -51,5 +67,7 @@ extern {
         "**" => Token::OpPow,
         "(" => Token::OpenRoundBracket,
         ")" => Token::CloseRoundBracket,
+        ";" => Token::Semicolon,
+        "PI" => Token::Pi,
     }
 }

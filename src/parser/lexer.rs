@@ -1,12 +1,12 @@
+use phf::phf_map;
 use std::fmt;
 use std::str::CharIndices;
-// use phf::phf_map;
 
-#[derive(Clone)]
+#[derive(Clone, Copy, Debug)]
 pub enum Token<'input> {
     Variable(&'input str),
     Number(&'input str),
-    // Pi,
+    Pi,
     OpAdd,
     OpSub,
     OpMul,
@@ -16,14 +16,15 @@ pub enum Token<'input> {
     CloseRoundBracket,
     OpenSquareBracket,
     CloseSquareBracket,
+    Semicolon,
 }
 
-impl fmt::Debug for Token<'_> {
+impl fmt::Display for Token<'_> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Token::Variable(s) => write!(f, "\"{}\"", s),
             Token::Number(n) => write!(f, "\"{}\"", n),
-            // Token::Pi => write!(f, "PI"),
+            Token::Pi => write!(f, "PI"),
             Token::OpAdd => write!(f, "+"),
             Token::OpSub => write!(f, "-"),
             Token::OpMul => write!(f, "*"),
@@ -33,13 +34,14 @@ impl fmt::Debug for Token<'_> {
             Token::CloseRoundBracket => write!(f, ")"),
             Token::OpenSquareBracket => write!(f, "["),
             Token::CloseSquareBracket => write!(f, "]"),
+            Token::Semicolon => write!(f, ";"),
         }
     }
 }
 
-// static KEYWORDS: phf::Map<&'static str, Token> = phf_map! {
-//     "pi" => Token::Pi,
-// };
+static KEYWORDS: phf::Map<&'static str, Token> = phf_map! {
+    "PI" => Token::Pi,
+};
 
 #[derive(Debug)]
 pub enum LexicalError {
@@ -51,7 +53,7 @@ impl fmt::Display for LexicalError {
         match self {
             LexicalError::UnrecognizedSymbol(i, ch) => {
                 write!(f, "lexical error: unrecognized symbol '{}' at {}", ch, i)
-            }
+            },
         }
     }
 }
@@ -112,6 +114,7 @@ impl<'input> Iterator for Lexer<'input> {
                 Some((i, ')')) => return Some(Ok((i, Token::CloseRoundBracket, i + 1))),
                 Some((i, '[')) => return Some(Ok((i, Token::OpenSquareBracket, i + 1))),
                 Some((i, ']')) => return Some(Ok((i, Token::CloseSquareBracket, i + 1))),
+                Some((i, ';')) => return Some(Ok((i, Token::Semicolon, i + 1))),
 
                 Some((i, '*')) => match self.chars.peek() {
                     Some((_, '*')) => {
@@ -128,7 +131,12 @@ impl<'input> Iterator for Lexer<'input> {
 
                 Some((i, ch)) if ch.is_ascii_alphabetic() => {
                     let end = self.get_variable(i);
-                    return Some(Ok((i, Token::Variable(&self.input[i..end]), end)));
+                    let variable = &self.input[i..end];
+
+                    match KEYWORDS.get(variable) {
+                        Some(w) => return Some(Ok((i, *w, end))),
+                        _ => return Some(Ok((i, Token::Variable(&self.input[i..end]), end))),
+                    };
                 }
 
                 Some((i, ch)) => return Some(Err(LexicalError::UnrecognizedSymbol(i, ch))),
