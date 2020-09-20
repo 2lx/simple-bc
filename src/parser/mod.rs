@@ -2,13 +2,13 @@
 #[cfg_attr(rustfmt, rustfmt_skip)]
 mod syntax;
 mod lexer;
-mod terms;
+pub mod nodes;
 
 use lalrpop_util::ParseError;
 
 pub fn parse(
     src: &str,
-) -> Result<terms::Statements, ParseError<usize, lexer::Token, lexer::LexicalError>> {
+) -> Result<nodes::Statements, ParseError<usize, lexer::Token, lexer::LexicalError>> {
     let lexer = lexer::Lexer::new(src);
     syntax::SourceParser::new().parse(src, lexer)
 }

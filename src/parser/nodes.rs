@@ -5,6 +5,7 @@ use std::fmt;
 pub struct Loc(pub usize, pub usize);
 
 // non-terminals
+#[derive(Debug)]
 pub struct Statements(pub Vec<Statement>);
 
 impl fmt::Display for Statements {
@@ -20,13 +21,8 @@ impl fmt::Display for Statements {
     }
 }
 
-impl fmt::Debug for Statements {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> fmt::Result {
-        fmt::Display::fmt(self, f)
-    }
-}
-
-pub struct Statement(pub Term);
+#[derive(Debug)]
+pub struct Statement(pub Node);
 
 impl fmt::Display for Statement {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -35,22 +31,23 @@ impl fmt::Display for Statement {
     }
 }
 
-pub enum Term {
-    Multiply(Loc, Box<Term>, Box<Term>),
-    Divide(Loc, Box<Term>, Box<Term>),
-    Add(Loc, Box<Term>, Box<Term>),
-    Subtract(Loc, Box<Term>, Box<Term>),
-    Power(Loc, Box<Term>, Box<Term>),
-    Assignment(Loc, Box<Term>, Box<Term>),
+#[derive(Debug)]
+pub enum Node {
+    Multiply(Loc, Box<Node>, Box<Node>),
+    Divide(Loc, Box<Node>, Box<Node>),
+    Add(Loc, Box<Node>, Box<Node>),
+    Subtract(Loc, Box<Node>, Box<Node>),
+    Power(Loc, Box<Node>, Box<Node>),
+    Assignment(Loc, Box<Node>, Box<Node>),
     Variable(Loc, std::string::String),
     NumberLiteral(Loc, i128),
-    UnaryMinus(Loc, Box<Term>),
+    UnaryMinus(Loc, Box<Node>),
     Pi(Loc),
 }
 
-impl fmt::Display for Term {
+impl fmt::Display for Node {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        use Term::*;
+        use Node::*;
         match self {
             Multiply(_, l, r) => write!(f, "({} * {})", l, r),
             Divide(_, l, r) => write!(f, "({} / {})", l, r),

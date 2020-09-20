@@ -1,4 +1,4 @@
-use super::terms::*;
+use super::nodes::*;
 use super::lexer::{Token, LexicalError};
 
 grammar<'input>(input: &'input str);
@@ -29,41 +29,41 @@ Statement: Statement = {
     Assignment => Statement(<>),
 }
 
-Assignment: Term = {
-    <l:@L> "let" <v:Variable> "=" <e:Expression> <r:@R> => Term::Assignment(Loc(l, r), Box::new(v), Box::new(e)),
+Assignment: Node = {
+    <l:@L> "let" <v:Variable> "=" <e:Expression> <r:@R> => Node::Assignment(Loc(l, r), Box::new(v), Box::new(e)),
 }
 
-Expression: Term = {
+Expression: Node = {
     Expr0,
 }
 
-Expr0: Term = {
-    <e1:Expr0> <l:@L> "+" <r:@R> <e2:Expr1> => Term::Add(Loc(l, r), Box::new(e1), Box::new(e2)),
-    <e1:Expr0> <l:@L> "-" <r:@R> <e2:Expr1> => Term::Subtract(Loc(l, r), Box::new(e1), Box::new(e2)),
+Expr0: Node = {
+    <e1:Expr0> <l:@L> "+" <r:@R> <e2:Expr1> => Node::Add(Loc(l, r), Box::new(e1), Box::new(e2)),
+    <e1:Expr0> <l:@L> "-" <r:@R> <e2:Expr1> => Node::Subtract(Loc(l, r), Box::new(e1), Box::new(e2)),
     Expr1,
 }
 
-Expr1: Term = {
-    <e1:Expr1> <l:@L> "*" <r:@R> <e2:Expr2> => Term::Multiply(Loc(l, r), Box::new(e1), Box::new(e2)),
-    <e1:Expr1> <l:@L> "/" <r:@R> <e2:Expr2> => Term::Divide(Loc(l, r), Box::new(e1), Box::new(e2)),
+Expr1: Node = {
+    <e1:Expr1> <l:@L> "*" <r:@R> <e2:Expr2> => Node::Multiply(Loc(l, r), Box::new(e1), Box::new(e2)),
+    <e1:Expr1> <l:@L> "/" <r:@R> <e2:Expr2> => Node::Divide(Loc(l, r), Box::new(e1), Box::new(e2)),
     Expr2,
 }
 
-Expr2: Term = {
-    <e1:Expr2> <l:@L> "**" <r:@R> <e2:Expr3> => Term::Power(Loc(l, r), Box::new(e1), Box::new(e2)),
+Expr2: Node = {
+    <e1:Expr2> <l:@L> "**" <r:@R> <e2:Expr3> => Node::Power(Loc(l, r), Box::new(e1), Box::new(e2)),
     Expr3,
 }
 
-Expr3: Term = {
-    <l:@L> "-" <r:@R> <e:Expr3> => Term::UnaryMinus(Loc(l, r), Box::new(e)),
-    <l:@L> <s:LexNumberLiteral> <r:@R> => Term::NumberLiteral(Loc(l, r), s.parse::<i128>().unwrap()),
+Expr3: Node = {
+    <l:@L> "-" <r:@R> <e:Expr3> => Node::UnaryMinus(Loc(l, r), Box::new(e)),
+    <l:@L> <s:LexNumberLiteral> <r:@R> => Node::NumberLiteral(Loc(l, r), s.parse::<i128>().unwrap()),
     "(" <e:Expression> ")" => e,
-    <l:@L> "PI" <r:@R> => Term::Pi(Loc(l, r)),
+    <l:@L> "PI" <r:@R> => Node::Pi(Loc(l, r)),
     Variable,
 }
 
-Variable: Term = {
-    <l:@L> <s:LexVariable> <r:@R> => Term::Variable(Loc(l, r), s.to_string()),
+Variable: Node = {
+    <l:@L> <s:LexVariable> <r:@R> => Node::Variable(Loc(l, r), s.to_string()),
 }
 
 extern {
