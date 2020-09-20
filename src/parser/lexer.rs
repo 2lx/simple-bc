@@ -10,6 +10,7 @@ pub enum Token<'input> {
     OpSub,
     OpMul,
     OpDiv,
+    OpPow,
     ParenOpen,
     ParenClose,
 }
@@ -23,6 +24,7 @@ impl fmt::Debug for Token<'_> {
             Token::OpSub => write!(f, "-"),
             Token::OpMul => write!(f, "*"),
             Token::OpDiv => write!(f, "/"),
+            Token::OpPow => write!(f, "**"),
             Token::ParenOpen => write!(f, "("),
             Token::ParenClose => write!(f, ")"),
         }
@@ -69,7 +71,13 @@ impl<'input> Iterator for Lexer<'input> {
                 Some((_, ' ')) | Some((_, '\n')) | Some((_, '\t')) => continue,
                 Some((i, '+')) => return Some(Ok((i, Token::OpAdd, i + 1))),
                 Some((i, '-')) => return Some(Ok((i, Token::OpSub, i + 1))),
-                Some((i, '*')) => return Some(Ok((i, Token::OpMul, i + 1))),
+                Some((i, '*')) => match self.chars.peek() {
+                    Some((_, '*')) => {
+                        self.chars.next();
+                        return Some(Ok((i, Token::OpPow, i + 2)));
+                    }
+                    _ => return Some(Ok((i, Token::OpMul, i + 1))),
+                },
                 Some((i, '/')) => return Some(Ok((i, Token::OpDiv, i + 1))),
                 Some((i, ')')) => return Some(Ok((i, Token::ParenClose, i + 1))),
                 Some((i, '(')) => return Some(Ok((i, Token::ParenOpen, i + 1))),

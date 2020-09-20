@@ -17,6 +17,7 @@ pub enum Expr {
     Divide(Loc, Box<Expr>, Box<Expr>),
     Add(Loc, Box<Expr>, Box<Expr>),
     Subtract(Loc, Box<Expr>, Box<Expr>),
+    Power(Loc, Box<Expr>, Box<Expr>),
     StringLiteral(Loc, std::string::String),
     UnaryMinus(Loc, Box<Expr>),
 }
@@ -29,6 +30,7 @@ impl fmt::Debug for Expr {
             Divide(_, l, r) => write!(f, "({:?} / {:?})", l, r),
             Add(_, l, r) => write!(f, "({:?} + {:?})", l, r),
             Subtract(_, l, r) => write!(f, "({:?} - {:?})", l, r),
+            Power(_, l, r) => write!(f, "({:?} ** {:?})", l, r),
             StringLiteral(_, s) => write!(f, "{}", s),
             UnaryMinus(_, r) => write!(f, "-{:?}", r),
         }

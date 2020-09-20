@@ -24,7 +24,12 @@ Expr1: Expr = {
 }
 
 Expr2: Expr = {
-    <a:@L> "-" <b:@R> <r:Expr2> => Expr::UnaryMinus(Loc(a, b), Box::new(r)),
+    <l:Expr2> <a:@L> "**" <b:@R> <r:Expr3> => Expr::Power(Loc(a, b), Box::new(l), Box::new(r)),
+    Expr3,
+}
+
+Expr3: Expr = {
+    <a:@L> "-" <b:@R> <r:Expr3> => Expr::UnaryMinus(Loc(a, b), Box::new(r)),
     <a:@L> <s:LexStringLiteral> <b:@R> => Expr::StringLiteral(Loc(a, b), s.to_string()),
     "(" <e:Expression> ")" => e,
 }
@@ -40,6 +45,7 @@ extern {
         "-" => Token::OpSub,
         "*" => Token::OpMul,
         "/" => Token::OpDiv,
+        "**" => Token::OpPow,
         "(" => Token::ParenOpen,
         ")" => Token::ParenClose,
     }
