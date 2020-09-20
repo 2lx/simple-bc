@@ -1,36 +1,38 @@
-use super::types::*;
+use super::terms::*;
 use super::lexer::{Token, LexicalError};
 
 grammar<'input>(input: &'input str);
 
 pub Source: Block = {
-    Expression => Block(<>)
+    Expression => Block(<>),
 }
 
-Expression: Expr = {
+Expression: Term = {
     Expr0,
 }
 
-Expr0: Expr = {
-    <l:Expr0> <a:@L> "+" <b:@R> <r:Expr1> => Expr::Add(Loc(a, b), Box::new(l), Box::new(r)),
-    <l:Expr0> <a:@L> "-" <b:@R> <r:Expr1> => Expr::Subtract(Loc(a, b), Box::new(l), Box::new(r)),
+Expr0: Term = {
+    <l:Expr0> <a:@L> "+" <b:@R> <r:Expr1> => Term::Add(Loc(a, b), Box::new(l), Box::new(r)),
+    <l:Expr0> <a:@L> "-" <b:@R> <r:Expr1> => Term::Subtract(Loc(a, b), Box::new(l), Box::new(r)),
     Expr1,
 }
 
-Expr1: Expr = {
-    <l:Expr1> <a:@L> "*" <b:@R> <r:Expr2> => Expr::Multiply(Loc(a, b), Box::new(l), Box::new(r)),
-    <l:Expr1> <a:@L> "/" <b:@R> <r:Expr2> => Expr::Divide(Loc(a, b), Box::new(l), Box::new(r)),
+Expr1: Term = {
+    <l:Expr1> <a:@L> "*" <b:@R> <r:Expr2> => Term::Multiply(Loc(a, b), Box::new(l), Box::new(r)),
+    <l:Expr1> <a:@L> "/" <b:@R> <r:Expr2> => Term::Divide(Loc(a, b), Box::new(l), Box::new(r)),
     Expr2,
 }
 
-Expr2: Expr = {
-    <l:Expr2> <a:@L> "**" <b:@R> <r:Expr3> => Expr::Power(Loc(a, b), Box::new(l), Box::new(r)),
+Expr2: Term = {
+    <l:Expr2> <a:@L> "**" <b:@R> <r:Expr3> => Term::Power(Loc(a, b), Box::new(l), Box::new(r)),
     Expr3,
 }
 
-Expr3: Expr = {
-    <a:@L> "-" <b:@R> <r:Expr3> => Expr::UnaryMinus(Loc(a, b), Box::new(r)),
-    <a:@L> <s:LexStringLiteral> <b:@R> => Expr::StringLiteral(Loc(a, b), s.to_string()),
+Expr3: Term = {
+    <a:@L> "-" <b:@R> <r:Expr3> => Term::UnaryMinus(Loc(a, b), Box::new(r)),
+    <a:@L> <s:LexNumberLiteral> <b:@R> => {
+        Term::NumberLiteral(Loc(a, b), s.parse::<i128>().unwrap())
+    },
     "(" <e:Expression> ")" => e,
 }
 
@@ -39,14 +41,15 @@ extern {
     type Error = LexicalError;
 
     enum Token<'input> {
-        LexStringLiteral => Token::String(<&'input str>),
+        LexStringLiteral => Token::Variable(<&'input str>),
+        LexNumberLiteral => Token::Number(<&'input str>),
         // "pi" => Token::Pi,
         "+" => Token::OpAdd,
         "-" => Token::OpSub,
         "*" => Token::OpMul,
         "/" => Token::OpDiv,
         "**" => Token::OpPow,
-        "(" => Token::ParenOpen,
-        ")" => Token::ParenClose,
+        "(" => Token::OpenRoundBracket,
+        ")" => Token::CloseRoundBracket,
     }
 }
