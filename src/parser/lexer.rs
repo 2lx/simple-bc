@@ -7,6 +7,7 @@ pub enum Token<'input> {
     Variable(&'input str),
     Number(&'input str),
     Pi,
+    Let,
     OpAdd,
     OpSub,
     OpMul,
@@ -17,6 +18,7 @@ pub enum Token<'input> {
     OpenSquareBracket,
     CloseSquareBracket,
     Semicolon,
+    EqualsSign,
 }
 
 impl fmt::Display for Token<'_> {
@@ -25,6 +27,7 @@ impl fmt::Display for Token<'_> {
             Token::Variable(s) => write!(f, "\"{}\"", s),
             Token::Number(n) => write!(f, "\"{}\"", n),
             Token::Pi => write!(f, "PI"),
+            Token::Let => write!(f, "let"),
             Token::OpAdd => write!(f, "+"),
             Token::OpSub => write!(f, "-"),
             Token::OpMul => write!(f, "*"),
@@ -35,12 +38,14 @@ impl fmt::Display for Token<'_> {
             Token::OpenSquareBracket => write!(f, "["),
             Token::CloseSquareBracket => write!(f, "]"),
             Token::Semicolon => write!(f, ";"),
+            Token::EqualsSign => write!(f, "="),
         }
     }
 }
 
 static KEYWORDS: phf::Map<&'static str, Token> = phf_map! {
     "PI" => Token::Pi,
+    "let" => Token::Let,
 };
 
 #[derive(Debug)]
@@ -53,7 +58,7 @@ impl fmt::Display for LexicalError {
         match self {
             LexicalError::UnrecognizedSymbol(i, ch) => {
                 write!(f, "lexical error: unrecognized symbol '{}' at {}", ch, i)
-            },
+            }
         }
     }
 }
@@ -115,6 +120,7 @@ impl<'input> Iterator for Lexer<'input> {
                 Some((i, '[')) => return Some(Ok((i, Token::OpenSquareBracket, i + 1))),
                 Some((i, ']')) => return Some(Ok((i, Token::CloseSquareBracket, i + 1))),
                 Some((i, ';')) => return Some(Ok((i, Token::Semicolon, i + 1))),
+                Some((i, '=')) => return Some(Ok((i, Token::EqualsSign, i + 1))),
 
                 Some((i, '*')) => match self.chars.peek() {
                     Some((_, '*')) => {

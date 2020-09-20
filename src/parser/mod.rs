@@ -103,6 +103,21 @@ fn test_errors() {
 
 #[test]
 fn test_statements() {
+    let result = parse(";;;;;");
+    assert!(result.is_ok());
+    assert_eq!(&format!("{}", result.unwrap()), "");
+
+    let result = parse(";;;;");
+    assert!(result.is_ok());
+
+    let result = parse("32;;;;;");
+    assert!(result.is_ok());
+    assert_eq!(&format!("{}", result.unwrap()), "32;");
+
+    let result = parse("32;;;;12;;;;;45");
+    assert!(result.is_ok());
+    assert_eq!(&format!("{}", result.unwrap()), "32; 12; 45;");
+
     let result = parse("3+2;12-3;-42;");
     assert!(result.is_ok());
     assert_eq!(&format!("{}", result.unwrap()), "(3 + 2); (12 - 3); -42;");
@@ -110,4 +125,19 @@ fn test_statements() {
     let result = parse("3+2;12-3;-42;");
     assert!(result.is_ok());
     assert_eq!(&format!("{}", result.unwrap()), "(3 + 2); (12 - 3); -42;");
+
+    let result = parse("let a=3");
+    assert!(result.is_ok());
+    assert_eq!(&format!("{}", result.unwrap()), "let a = 3;");
+
+    let result = parse(";;;let a=3;;;;;");
+    assert!(result.is_ok());
+    assert_eq!(&format!("{}", result.unwrap()), "let a = 3;");
+
+    let result = parse(";let a=3;;;; \n ;let b=5;;;a+b;;");
+    assert!(result.is_ok());
+    assert_eq!(
+        &format!("{}", result.unwrap()),
+        "let a = 3; let b = 5; (a + b);"
+    );
 }

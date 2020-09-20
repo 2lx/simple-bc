@@ -1,12 +1,16 @@
+use std::io::{self, Read};
+
 mod parser;
 
 fn main() {
-    let src = "3 + 22 * 11 + 65";
-    let expr = parser::parse(src);
+    let mut buffer = String::new();
+    io::stdin().read_to_string(&mut buffer).unwrap();
+    println!("\nInput: '{}'", buffer);
+    let expr = parser::parse(&buffer);
 
     if expr.is_ok() {
-        println!("{}", expr.unwrap());
+        println!("\nResult: {}", expr.unwrap());
     } else {
-        println!("{}", expr.unwrap_err());
+        println!("\nError: {}", expr.unwrap_err());
     }
 }

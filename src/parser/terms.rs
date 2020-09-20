@@ -10,10 +10,13 @@ pub struct Statements(pub Vec<Statement>);
 impl fmt::Display for Statements {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> fmt::Result {
         let Statements(stts) = self;
-        for stt in &stts[0..stts.len() - 1] {
-            fmt::write(f, format_args!("{} ", stt))?
+        if !stts.is_empty() {
+            for stt in &stts[0..stts.len() - 1] {
+                fmt::write(f, format_args!("{} ", stt))?
+            }
+            fmt::write(f, format_args!("{}", stts.last().unwrap()))?
         }
-        fmt::write(f, format_args!("{}", stts.last().unwrap()))
+        Ok(())
     }
 }
 
@@ -38,7 +41,8 @@ pub enum Term {
     Add(Loc, Box<Term>, Box<Term>),
     Subtract(Loc, Box<Term>, Box<Term>),
     Power(Loc, Box<Term>, Box<Term>),
-    // Variable(Loc, std::string::String),
+    Assignment(Loc, Box<Term>, Box<Term>),
+    Variable(Loc, std::string::String),
     NumberLiteral(Loc, i128),
     UnaryMinus(Loc, Box<Term>),
     Pi(Loc),
@@ -53,7 +57,8 @@ impl fmt::Display for Term {
             Add(_, l, r) => write!(f, "({} + {})", l, r),
             Subtract(_, l, r) => write!(f, "({} - {})", l, r),
             Power(_, l, r) => write!(f, "({} ** {})", l, r),
-            // Variable(_, s) => write!(f, "{}", s),
+            Assignment(_, l, r) => write!(f, "let {} = {}", l, r),
+            Variable(_, s) => write!(f, "{}", s),
             NumberLiteral(_, n) => write!(f, "{}", n),
             UnaryMinus(_, r) => write!(f, "-{}", r),
             Pi(_) => write!(f, "PI"),

@@ -4,23 +4,33 @@ use super::lexer::{Token, LexicalError};
 grammar<'input>(input: &'input str);
 
 // templates
-SepVec<T>: Vec<T> = {
-    <v:(<T> ";")*> <e:T?> => match e {
-        None => v,
-        Some(e) => {
-            let mut v = v;
-            v.push(e);
-            v
-        }
-    }
+SepVec<T, C>: Vec<T> = {
+    <v:(<T> Repeated<C>)*> => v,
+    <v:(<T> Repeated<C>)*> <e:T> => {
+        let mut v = v;
+        v.push(e);
+        v
+    },
 };
 
+Repeated<C>: C = {
+    <r:C> => r,
+    Repeated<C> <r:C> => r,
+}
+
+// syntax
 pub Source: Statements = {
-    SepVec<Statement> => Statements(<>),
+    SepVec<Statement, ";"> => Statements(<>),
+    Repeated<";"> <l:SepVec<Statement, ";">> => Statements(l),
 }
 
 Statement: Statement = {
     Expression => Statement(<>),
+    Assignment => Statement(<>),
+}
+
+Assignment: Term = {
+    <l:@L> "let" <v:Variable> "=" <e:Expression> <r:@R> => Term::Assignment(Loc(l, r), Box::new(v), Box::new(e)),
 }
 
 Expression: Term = {
@@ -28,29 +38,32 @@ Expression: Term = {
 }
 
 Expr0: Term = {
-    <l:Expr0> <a:@L> "+" <b:@R> <r:Expr1> => Term::Add(Loc(a, b), Box::new(l), Box::new(r)),
-    <l:Expr0> <a:@L> "-" <b:@R> <r:Expr1> => Term::Subtract(Loc(a, b), Box::new(l), Box::new(r)),
+    <e1:Expr0> <l:@L> "+" <r:@R> <e2:Expr1> => Term::Add(Loc(l, r), Box::new(e1), Box::new(e2)),
+    <e1:Expr0> <l:@L> "-" <r:@R> <e2:Expr1> => Term::Subtract(Loc(l, r), Box::new(e1), Box::new(e2)),
     Expr1,
 }
 
 Expr1: Term = {
-    <l:Expr1> <a:@L> "*" <b:@R> <r:Expr2> => Term::Multiply(Loc(a, b), Box::new(l), Box::new(r)),
-    <l:Expr1> <a:@L> "/" <b:@R> <r:Expr2> => Term::Divide(Loc(a, b), Box::new(l), Box::new(r)),
+    <e1:Expr1> <l:@L> "*" <r:@R> <e2:Expr2> => Term::Multiply(Loc(l, r), Box::new(e1), Box::new(e2)),
+    <e1:Expr1> <l:@L> "/" <r:@R> <e2:Expr2> => Term::Divide(Loc(l, r), Box::new(e1), Box::new(e2)),
     Expr2,
 }
 
 Expr2: Term = {
-    <l:Expr2> <a:@L> "**" <b:@R> <r:Expr3> => Term::Power(Loc(a, b), Box::new(l), Box::new(r)),
+    <e1:Expr2> <l:@L> "**" <r:@R> <e2:Expr3> => Term::Power(Loc(l, r), Box::new(e1), Box::new(e2)),
     Expr3,
 }
 
 Expr3: Term = {
-    <a:@L> "-" <b:@R> <r:Expr3> => Term::UnaryMinus(Loc(a, b), Box::new(r)),
-    <a:@L> <s:LexNumberLiteral> <b:@R> => {
-        Term::NumberLiteral(Loc(a, b), s.parse::<i128>().unwrap())
-    },
+    <l:@L> "-" <r:@R> <e:Expr3> => Term::UnaryMinus(Loc(l, r), Box::new(e)),
+    <l:@L> <s:LexNumberLiteral> <r:@R> => Term::NumberLiteral(Loc(l, r), s.parse::<i128>().unwrap()),
     "(" <e:Expression> ")" => e,
-    <a:@L> "PI" <b:@R> => Term::Pi(Loc(a, b)),
+    <l:@L> "PI" <r:@R> => Term::Pi(Loc(l, r)),
+    Variable,
+}
+
+Variable: Term = {
+    <l:@L> <s:LexVariable> <r:@R> => Term::Variable(Loc(l, r), s.to_string()),
 }
 
 extern {
@@ -60,6 +73,8 @@ extern {
     enum Token<'input> {
         LexVariable => Token::Variable(<&'input str>),
         LexNumberLiteral => Token::Number(<&'input str>),
+        "PI" => Token::Pi,
+        "let" => Token::Let,
         "+" => Token::OpAdd,
         "-" => Token::OpSub,
         "*" => Token::OpMul,
@@ -68,6 +83,6 @@ extern {
         "(" => Token::OpenRoundBracket,
         ")" => Token::CloseRoundBracket,
         ";" => Token::Semicolon,
-        "PI" => Token::Pi,
+        "=" => Token::EqualsSign,
     }
 }
