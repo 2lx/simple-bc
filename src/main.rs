@@ -14,7 +14,7 @@ fn main() {
         let mut buffer = String::new();
         io::stdin().read_line(&mut buffer).unwrap();
         let trimmed = buffer.trim();
-        if trimmed == "exit" || trimmed == "quit" {
+        if trimmed == "quit" {
             break;
         }
 

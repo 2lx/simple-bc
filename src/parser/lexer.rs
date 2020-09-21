@@ -7,7 +7,6 @@ pub enum Token<'input> {
     Variable(&'input str),
     Number(&'input str),
     Pi,
-    Let,
     OpAdd,
     OpSub,
     OpMul,
@@ -27,7 +26,6 @@ impl fmt::Display for Token<'_> {
             Token::Variable(s) => write!(f, "\"{}\"", s),
             Token::Number(n) => write!(f, "\"{}\"", n),
             Token::Pi => write!(f, "PI"),
-            Token::Let => write!(f, "let"),
             Token::OpAdd => write!(f, "+"),
             Token::OpSub => write!(f, "-"),
             Token::OpMul => write!(f, "*"),
@@ -45,7 +43,6 @@ impl fmt::Display for Token<'_> {
 
 static KEYWORDS: phf::Map<&'static str, Token> = phf_map! {
     "PI" => Token::Pi,
-    "let" => Token::Let,
 };
 
 #[derive(Debug)]

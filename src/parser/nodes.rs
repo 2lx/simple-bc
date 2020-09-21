@@ -42,6 +42,7 @@ pub enum Node {
     Variable(Loc, std::string::String),
     NumberLiteral(Loc, i128),
     UnaryMinus(Loc, Box<Node>),
+    RoundBrackets(Loc, Box<Node>),
     Pi(Loc),
 }
 
@@ -49,15 +50,16 @@ impl fmt::Display for Node {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         use Node::*;
         match self {
-            Multiply(_, l, r) => write!(f, "({} * {})", l, r),
-            Divide(_, l, r) => write!(f, "({} / {})", l, r),
-            Add(_, l, r) => write!(f, "({} + {})", l, r),
-            Subtract(_, l, r) => write!(f, "({} - {})", l, r),
-            Power(_, l, r) => write!(f, "({} ** {})", l, r),
-            Assignment(_, l, r) => write!(f, "let {} = {}", l, r),
+            Multiply(_, l, r) => write!(f, "{} * {}", l, r),
+            Divide(_, l, r) => write!(f, "{} / {}", l, r),
+            Add(_, l, r) => write!(f, "{} + {}", l, r),
+            Subtract(_, l, r) => write!(f, "{} - {}", l, r),
+            Power(_, l, r) => write!(f, "{} ** {}", l, r),
+            Assignment(_, l, r) => write!(f, "{} = {}", l, r),
             Variable(_, s) => write!(f, "{}", s),
             NumberLiteral(_, n) => write!(f, "{}", n),
             UnaryMinus(_, r) => write!(f, "-{}", r),
+            RoundBrackets(_, r) => write!(f, "({})", r),
             Pi(_) => write!(f, "PI"),
         }
     }

@@ -17,44 +17,44 @@ pub fn parse(
 fn test_expressions_ok() {
     let result = parse("3 + 22 * 11 + 65");
     assert!(result.is_ok());
-    assert_eq!(&format!("{}", result.unwrap()), "((3 + (22 * 11)) + 65);");
+    assert_eq!(&format!("{}", result.unwrap()), "3 + 22 * 11 + 65;");
 
     let result = parse("(3 + 22) * 11 + 65;");
     assert!(result.is_ok());
-    assert_eq!(&format!("{}", result.unwrap()), "(((3 + 22) * 11) + 65);");
+    assert_eq!(&format!("{}", result.unwrap()), "(3 + 22) * 11 + 65;");
 
     let result = parse("3 + 22 * (11 + 65)");
     assert!(result.is_ok());
-    assert_eq!(&format!("{}", result.unwrap()), "(3 + (22 * (11 + 65)));");
+    assert_eq!(&format!("{}", result.unwrap()), "3 + 22 * (11 + 65);");
 
     let result = parse("(3 + 22) * (11 + 65)");
     assert!(result.is_ok());
-    assert_eq!(&format!("{}", result.unwrap()), "((3 + 22) * (11 + 65));");
+    assert_eq!(&format!("{}", result.unwrap()), "(3 + 22) * (11 + 65);");
 
     let result = parse("-(3 + - 22) * (-11 + 65)");
     assert!(result.is_ok());
     assert_eq!(
         &format!("{}", result.unwrap()),
-        "(-(3 + -22) * (-11 + 65));"
+        "-(3 + -22) * (-11 + 65);"
     );
 
     let result = parse("-3+-22*-11**3*1+ 65");
     assert!(result.is_ok());
     assert_eq!(
         &format!("{}", result.unwrap()),
-        "((-3 + ((-22 * (-11 ** 3)) * 1)) + 65);"
+        "-3 + -22 * -11 ** 3 * 1 + 65;"
     );
 
     let result = parse("-3+-22--11**3*1+ 65");
     assert!(result.is_ok());
     assert_eq!(
         &format!("{}", result.unwrap()),
-        "(((-3 + -22) - ((-11 ** 3) * 1)) + 65);"
+        "-3 + -22 - -11 ** 3 * 1 + 65;"
     );
 
     let result = parse("- PI* (10)");
     assert!(result.is_ok());
-    assert_eq!(&format!("{}", result.unwrap()), "(-PI * 10);");
+    assert_eq!(&format!("{}", result.unwrap()), "-PI * (10);");
 }
 
 #[test]
@@ -120,24 +120,24 @@ fn test_statements() {
 
     let result = parse("3+2;12-3;-42;");
     assert!(result.is_ok());
-    assert_eq!(&format!("{}", result.unwrap()), "(3 + 2); (12 - 3); -42;");
+    assert_eq!(&format!("{}", result.unwrap()), "3 + 2; 12 - 3; -42;");
 
     let result = parse("3+2;12-3;-42;");
     assert!(result.is_ok());
-    assert_eq!(&format!("{}", result.unwrap()), "(3 + 2); (12 - 3); -42;");
+    assert_eq!(&format!("{}", result.unwrap()), "3 + 2; 12 - 3; -42;");
 
-    let result = parse("let a=3");
+    let result = parse("  a=3  ");
     assert!(result.is_ok());
-    assert_eq!(&format!("{}", result.unwrap()), "let a = 3;");
+    assert_eq!(&format!("{}", result.unwrap()), "a = 3;");
 
-    let result = parse(";;;let a=3;;;;;");
+    let result = parse(";;; a= 3 ;;;;;");
     assert!(result.is_ok());
-    assert_eq!(&format!("{}", result.unwrap()), "let a = 3;");
+    assert_eq!(&format!("{}", result.unwrap()), "a = 3;");
 
-    let result = parse(";let a=3;;;; \n ;let b=5;;;a+b;;");
+    let result = parse(";a=3;;;; \n ;b=5;;;a+b;;");
     assert!(result.is_ok());
     assert_eq!(
         &format!("{}", result.unwrap()),
-        "let a = 3; let b = 5; (a + b);"
+        "a = 3; b = 5; a + b;"
     );
 }

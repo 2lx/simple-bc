@@ -30,7 +30,7 @@ Statement: Statement = {
 }
 
 Assignment: Node = {
-    <l:@L> "let" <v:Variable> "=" <e:Expression> <r:@R> => Node::Assignment(Loc(l, r), Box::new(v), Box::new(e)),
+    <l:@L> <v:Variable> "=" <e:Expression> <r:@R> => Node::Assignment(Loc(l, r), Box::new(v), Box::new(e)),
 }
 
 Expression: Node = {
@@ -57,7 +57,7 @@ Expr2: Node = {
 Expr3: Node = {
     <l:@L> "-" <r:@R> <e:Expr3> => Node::UnaryMinus(Loc(l, r), Box::new(e)),
     <l:@L> <s:LexNumberLiteral> <r:@R> => Node::NumberLiteral(Loc(l, r), s.parse::<i128>().unwrap()),
-    "(" <e:Expression> ")" => e,
+    <l:@L> "(" <e:Expression> ")" <r:@R> => Node::RoundBrackets(Loc(l, r), Box::new(e)),
     <l:@L> "PI" <r:@R> => Node::Pi(Loc(l, r)),
     Variable,
 }
@@ -74,7 +74,6 @@ extern {
         LexVariable => Token::Variable(<&'input str>),
         LexNumberLiteral => Token::Number(<&'input str>),
         "PI" => Token::Pi,
-        "let" => Token::Let,
         "+" => Token::OpAdd,
         "-" => Token::OpSub,
         "*" => Token::OpMul,
