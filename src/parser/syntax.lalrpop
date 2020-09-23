@@ -25,8 +25,10 @@ pub Source: Statements = {
 }
 
 Statement: Statement = {
-    Expression => Statement(<>),
-    Assignment => Statement(<>),
+    Expression => Statement::NodeTree(<>),
+    Assignment => Statement::NodeTree(<>),
+    <l:@L> "quit" <r:@R> => Statement::Command(Cmd::Quit(Loc(l, r))),
+    <l:@L> "vars" <r:@R> => Statement::Command(Cmd::PrintVars(Loc(l, r))),
 }
 
 Assignment: Node = {
@@ -73,7 +75,6 @@ extern {
     enum Token<'input> {
         LexVariable => Token::Variable(<&'input str>),
         LexNumberLiteral => Token::Number(<&'input str>),
-        "PI" => Token::Pi,
         "+" => Token::OpAdd,
         "-" => Token::OpSub,
         "*" => Token::OpMul,
@@ -83,5 +84,8 @@ extern {
         ")" => Token::CloseRoundBracket,
         ";" => Token::Semicolon,
         "=" => Token::EqualsSign,
+        "PI" => Token::Pi,
+        "quit" => Token::Quit,
+        "vars" => Token::Vars,
     }
 }

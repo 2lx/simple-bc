@@ -1,4 +1,5 @@
 use calculator::Calculator;
+use parser::nodes::{Cmd, Statement, Statements};
 use std::io::{self, Write};
 
 mod calculator;
@@ -13,16 +14,17 @@ fn main() {
 
         let mut buffer = String::new();
         io::stdin().read_line(&mut buffer).unwrap();
-        let trimmed = buffer.trim();
-        if trimmed == "quit" {
-            break;
-        }
 
         match parser::parse(&buffer) {
             Ok(nodes) => {
-                // println!("Parsed: {}", nodes);
-                // println!("Tokens: {:?}", nodes);
-                println!("{}", calc.calculate(&nodes));
+                let Statements(stts) = nodes;
+                for stt in stts.iter() {
+                    match stt {
+                        Statement::Command(Cmd::Quit(_)) => return,
+                        Statement::Command(Cmd::PrintVars(_)) => calc.print_vars(),
+                        Statement::NodeTree(nodetree) => calc.process_statement(&nodetree),
+                    }
+                }
             }
             Err(err) => println!("Error: {}", err),
         }

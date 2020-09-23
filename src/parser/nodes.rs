@@ -22,12 +22,34 @@ impl fmt::Display for Statements {
 }
 
 #[derive(Debug)]
-pub struct Statement(pub Node);
+pub enum Statement {
+    NodeTree(Node),
+    Command(Cmd),
+}
 
 impl fmt::Display for Statement {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let Statement(exprs) = self;
-        write!(f, "{}{}", exprs, Token::Semicolon)
+        use Statement::*;
+        match self {
+            NodeTree(exprs) => write!(f, "{}{}", exprs, Token::Semicolon),
+            Command(cmd) => write!(f, "{}{}", cmd, Token::Semicolon),
+        }
+    }
+}
+
+#[derive(Debug)]
+pub enum Cmd {
+    Quit(Loc),
+    PrintVars(Loc),
+}
+
+impl fmt::Display for Cmd {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        use Cmd::*;
+        match self {
+            Quit(_) => write!(f, "quit"),
+            PrintVars(_) => write!(f, "vars"),
+        }
     }
 }
 

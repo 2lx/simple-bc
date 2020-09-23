@@ -18,6 +18,8 @@ pub enum Token<'input> {
     CloseSquareBracket,
     Semicolon,
     EqualsSign,
+    Vars,
+    Quit,
 }
 
 impl fmt::Display for Token<'_> {
@@ -37,12 +39,16 @@ impl fmt::Display for Token<'_> {
             Token::CloseSquareBracket => write!(f, "]"),
             Token::Semicolon => write!(f, ";"),
             Token::EqualsSign => write!(f, "="),
+            Token::Quit => write!(f, "quit"),
+            Token::Vars => write!(f, "vars"),
         }
     }
 }
 
 static KEYWORDS: phf::Map<&'static str, Token> = phf_map! {
     "PI" => Token::Pi,
+    "quit" => Token::Quit,
+    "vars" => Token::Vars,
 };
 
 #[derive(Debug)]

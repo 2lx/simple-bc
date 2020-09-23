@@ -33,10 +33,7 @@ fn test_expressions_ok() {
 
     let result = parse("-(3 + - 22) * (-11 + 65)");
     assert!(result.is_ok());
-    assert_eq!(
-        &format!("{}", result.unwrap()),
-        "-(3 + -22) * (-11 + 65);"
-    );
+    assert_eq!(&format!("{}", result.unwrap()), "-(3 + -22) * (-11 + 65);");
 
     let result = parse("-3+-22*-11**3*1+ 65");
     assert!(result.is_ok());
@@ -130,14 +127,11 @@ fn test_statements() {
     assert!(result.is_ok());
     assert_eq!(&format!("{}", result.unwrap()), "a = 3;");
 
-    let result = parse(";;; a= 3 ;;;;;");
+    let result = parse(";;; a= 3 ;;;vars;;quit");
     assert!(result.is_ok());
-    assert_eq!(&format!("{}", result.unwrap()), "a = 3;");
+    assert_eq!(&format!("{}", result.unwrap()), "a = 3; vars; quit;");
 
     let result = parse(";a=3;;;; \n ;b=5;;;a+b;;");
     assert!(result.is_ok());
-    assert_eq!(
-        &format!("{}", result.unwrap()),
-        "a = 3; b = 5; a + b;"
-    );
+    assert_eq!(&format!("{}", result.unwrap()), "a = 3; b = 5; a + b;");
 }
