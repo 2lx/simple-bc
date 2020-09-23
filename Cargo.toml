@@ -1,5 +1,5 @@
 [package]
-name = "lalrpop-calculator"
+name = "simple-bc"
 version = "0.1.0"
 authors = ["Alexey Minchakov <lexaaim@gmail.com>"]
 edition = "2018"

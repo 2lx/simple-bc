@@ -58,7 +58,7 @@ Expr2: Node = {
 
 Expr3: Node = {
     <l:@L> "-" <r:@R> <e:Expr3> => Node::UnaryMinus(Loc(l, r), Box::new(e)),
-    <l:@L> <s:LexNumberLiteral> <r:@R> => Node::NumberLiteral(Loc(l, r), s.parse::<i128>().unwrap()),
+    <l:@L> <s:LexNumberLiteral> <r:@R> => Node::NumberLiteral(Loc(l, r), s.parse::<f64>().unwrap()),
     <l:@L> "(" <e:Expression> ")" <r:@R> => Node::RoundBrackets(Loc(l, r), Box::new(e)),
     <l:@L> "PI" <r:@R> => Node::Pi(Loc(l, r)),
     Variable,

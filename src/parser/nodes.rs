@@ -62,7 +62,7 @@ pub enum Node {
     Power(Loc, Box<Node>, Box<Node>),
     Assignment(Loc, Box<Node>, Box<Node>),
     Variable(Loc, std::string::String),
-    NumberLiteral(Loc, i128),
+    NumberLiteral(Loc, f64),
     UnaryMinus(Loc, Box<Node>),
     RoundBrackets(Loc, Box<Node>),
     Pi(Loc),

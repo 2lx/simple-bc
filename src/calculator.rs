@@ -19,10 +19,10 @@ impl fmt::Display for CalcError {
 }
 
 pub struct Calculator {
-    variables: HashMap<String, i128>,
+    variables: HashMap<String, f64>,
 }
 
-type CalcResult = Result<Option<i128>, CalcError>;
+type CalcResult = Result<Option<f64>, CalcError>;
 
 impl Calculator {
     pub fn new() -> Self {
@@ -31,14 +31,14 @@ impl Calculator {
         }
     }
 
-    fn unary_op(&mut self, l: &Node, f: &dyn Fn(i128) -> i128) -> CalcResult {
+    fn unary_op(&mut self, l: &Node, f: &dyn Fn(f64) -> f64) -> CalcResult {
         match self.process_node(l) {
             Ok(Some(r)) => Ok(Some(f(r))),
             err => err,
         }
     }
 
-    fn binary_op(&mut self, l: &Node, r: &Node, f: &dyn Fn(i128, i128) -> i128) -> CalcResult {
+    fn binary_op(&mut self, l: &Node, r: &Node, f: &dyn Fn(f64, f64) -> f64) -> CalcResult {
         match (self.process_node(l), self.process_node(r)) {
             (Ok(Some(n1)), Ok(Some(n2))) => Ok(Some(f(n1, n2))),
             (Ok(_), Ok(_)) => Err(CalcError::WrongNodeTree),
@@ -68,13 +68,13 @@ impl Calculator {
     fn process_node(&mut self, node: &Node) -> CalcResult {
         match node {
             &Node::NumberLiteral(_, n) => Ok(Some(n)),
-            &Node::Pi(_) => Ok(Some(3.14159 as i128)),
+            &Node::Pi(_) => Ok(Some(3.14159 as f64)),
             &Node::UnaryMinus(_, ref n1) => self.unary_op(n1, &|l| -l),
             &Node::Add(_, ref n1, ref n2) => self.binary_op(n1, n2, &|l, r| l + r),
             &Node::Multiply(_, ref n1, ref n2) => self.binary_op(n1, n2, &|l, r| l * r),
             &Node::Divide(_, ref n1, ref n2) => self.binary_op(n1, n2, &|l, r| l / r),
             &Node::Subtract(_, ref n1, ref n2) => self.binary_op(n1, n2, &|l, r| l - r),
-            &Node::Power(_, ref n1, ref n2) => self.binary_op(n1, n2, &|l, r| l.pow(r as u32)),
+            &Node::Power(_, ref n1, ref n2) => self.binary_op(n1, n2, &|l, r| l.powf(r)),
             &Node::Variable(_, ref name) => self.get_value(name),
             &Node::Assignment(_, ref var, ref val) => self.assign_value(var, val),
             &Node::RoundBrackets(_, ref n) => self.process_node(n),

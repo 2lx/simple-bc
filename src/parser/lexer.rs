@@ -79,10 +79,10 @@ impl<'input> Lexer<'input> {
         }
     }
 
-    fn get_number(&mut self, start: usize) -> usize {
+    fn get_number_end(&mut self, start: usize) -> usize {
         let mut end = start;
         while let Some((i, ch)) = self.chars.peek() {
-            if !ch.is_ascii_digit() {
+            if !ch.is_ascii_digit() && *ch != '.' {
                 break;
             }
             end = *i;
@@ -92,7 +92,7 @@ impl<'input> Lexer<'input> {
         end + 1
     }
 
-    fn get_variable(&mut self, start: usize) -> usize {
+    fn get_variable_end(&mut self, start: usize) -> usize {
         let mut end = start;
         while let Some((i, ch)) = self.chars.peek() {
             if !ch.is_ascii_alphabetic() && !ch.is_ascii_digit() && *ch != '_' {
@@ -134,12 +134,12 @@ impl<'input> Iterator for Lexer<'input> {
                 },
 
                 Some((i, ch)) if ch.is_ascii_digit() => {
-                    let end = self.get_number(i);
+                    let end = self.get_number_end(i);
                     return Some(Ok((i, Token::Number(&self.input[i..end]), end)));
                 }
 
                 Some((i, ch)) if ch.is_ascii_alphabetic() => {
-                    let end = self.get_variable(i);
+                    let end = self.get_variable_end(i);
                     let variable = &self.input[i..end];
 
                     match KEYWORDS.get(variable) {
